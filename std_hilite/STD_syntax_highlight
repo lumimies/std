@@ -588,8 +588,10 @@ sub redspans_traverse($%) {
         if(!$action_ref) {
             $action_refs{$action} = $action_ref = \$action;
         }
-        unshift @{$starts[$F]}, $action_ref;
-        push @{$ends[$P]}, $action_ref;
+        if($P != $F) {
+            unshift @{$starts[$F]}, $action_ref;
+            push @{$ends[$P]}, $action_ref;
+        }
         for ($F..$P-1) {
             unshift @{$loc[$_]}, $action_ref; 
         }
