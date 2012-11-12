@@ -63,6 +63,8 @@ my ($file, $parser, $src_text);
 # These are needed for redspans
 my @loc;
 
+my @starts;
+my @ends;
 =item main
 
 Your standard main method
@@ -248,19 +250,37 @@ sub highlight_perl6_full {
     </div>
     <pre>
 HTML
-
+    my $last_i = 0;
     local *spit_full_html = sub {
         my ($i, $buffer, $rule, $tree) = @ARG;
         $buffer = escape_html($buffer);
+        for my $p ($last_i..$i) {
+            for my $end (@{$ends[$p]}) {
+                $str .= qq{</span>};
+            }
+            for my $start (@{$starts[$p]}) {
+                $str .= qq{<span class="${$start}">};
+            }
+        }
+        $last_i = $i;
         $str .= qq{<span id="tree_$i" style="display:none;">$tree</span>};
         if($rule) {
-            $str .= qq{<span id="node_$i" class="$rule">$buffer</span>};
+            $str .= qq{<span id="node_$i">$buffer</span>};
         } else {
             $str .= $buffer;
         }
     };
 
-    redspans_traverse(\&spit_full_html,%colors); 
+    # redspans_traverse(\&spit_full_html,%colors);
+    for my $i (0..$#loc) {
+        for my $end (@{$ends[$i]}) {
+            $str .= qq{</span>};
+        }
+        for my $start (@{$starts[$i]}) {
+            $str .= qq{<span class="${$start}">};
+        }
+        $str .= escape_html(substr($src_text,$i,1));
+    }
 
     $str .= <<"HTML";
     </pre>
@@ -568,6 +588,8 @@ sub redspans_traverse($%) {
         if(!$action_ref) {
             $action_refs{$action} = $action_ref = \$action;
         }
+        unshift @{$starts[$F]}, $action_ref;
+        push @{$ends[$P]}, $action_ref;
         for ($F..$P-1) {
             unshift @{$loc[$_]}, $action_ref; 
         }
