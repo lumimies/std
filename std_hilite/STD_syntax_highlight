@@ -387,7 +387,7 @@ sub highlight_perl6_ansi {
     my $str = "";
     my %colors = ();
 
-    my $ANSI = "STD_syntax_highlight.ansi";
+    my $ANSI = "std_hilite/STD_syntax_highlight.ansi";
     open ANSI_FILE, $ANSI
         or die "Could not open $ANSI: $OS_ERROR\n";
     my $line;
